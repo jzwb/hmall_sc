@@ -1,0 +1,12 @@
+/.idea/
+.DS_Store
+/logs/
+/user-service/target/
+/trade-service/target/
+/pay-service/target/
+/item-service/target/
+/hm-service/target/
+/hm-gateway/target/
+/hm-common/target/
+/hm-api/target/
+/cart-service/target/
