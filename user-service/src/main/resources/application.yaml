@@ -3,6 +3,14 @@ server:
 feign:
   okhttp:
     enabled: true
+  sentinel:
+    enabled: true
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8090 #sentinel控制台链接地址
+      http-method-specify: true #是否设置请求方式作为资源名称
 hm:
   db:
     database: hm-user
