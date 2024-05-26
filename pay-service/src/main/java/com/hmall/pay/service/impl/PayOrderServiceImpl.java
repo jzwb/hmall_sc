@@ -3,6 +3,7 @@ package com.hmall.pay.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmall.api.client.TradeClient;
 import com.hmall.api.client.UserClient;
 import com.hmall.common.exception.BizIllegalException;
 import com.hmall.common.utils.BeanUtils;
@@ -13,6 +14,7 @@ import com.hmall.pay.domain.po.PayOrder;
 import com.hmall.pay.enums.PayStatus;
 import com.hmall.pay.mapper.PayOrderMapper;
 import com.hmall.pay.service.IPayOrderService;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +33,9 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> implements IPayOrderService {
     
-    //private final IOrderService orderService;
-    
     private final UserClient userClient;
+    
+    private final TradeClient tradeClient;
 
     @Override
     public String applyPayOrder(PayApplyDTO applyDTO) {
@@ -44,12 +46,12 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
     }
 
     @Override
-    @Transactional
+    @GlobalTransactional
     public void tryPayOrderByBalance(PayOrderFormDTO payOrderFormDTO) {
         // 1.查询支付单
         PayOrder po = getById(payOrderFormDTO.getId());
         // 2.判断状态
-        if(!PayStatus.WAIT_BUYER_PAY.equalsValue(po.getStatus())){
+        if (!PayStatus.WAIT_BUYER_PAY.equalsValue(po.getStatus())) {
             // 订单不是未支付，状态异常
             throw new BizIllegalException("交易已支付或关闭！");
         }
@@ -61,11 +63,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
             throw new BizIllegalException("交易已支付或关闭！");
         }
         // 5.修改订单状态
-        /*Order order = new Order();
-        order.setId(po.getBizOrderNo());
-        order.setStatus(2);
-        order.setPayTime(LocalDateTime.now());
-        orderService.updateById(order);*/
+        tradeClient.markOrderPaySuccess(po.getBizOrderNo());
     }
 
     public boolean markPayOrderSuccess(Long id, LocalDateTime successTime) {
@@ -120,8 +118,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         // 2.初始化数据
         payOrder.setPayOverTime(LocalDateTime.now().plusMinutes(120L));
         payOrder.setStatus(PayStatus.WAIT_BUYER_PAY.getValue());
-        //payOrder.setBizUserId(UserContext.getUser());
-        payOrder.setBizUserId(1L);
+        payOrder.setBizUserId(UserContext.getUser());
         return payOrder;
     }
     public PayOrder queryByBizOrderNo(Long bizOrderNo) {
