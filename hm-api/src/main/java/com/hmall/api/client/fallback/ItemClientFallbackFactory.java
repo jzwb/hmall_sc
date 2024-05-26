@@ -3,6 +3,7 @@ package com.hmall.api.client.fallback;
 import com.hmall.api.client.ItemClient;
 import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
+import com.hmall.common.exception.BizIllegalException;
 import com.hmall.common.utils.CollUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.openfeign.FallbackFactory;
@@ -24,7 +25,7 @@ public class ItemClientFallbackFactory implements FallbackFactory<ItemClient> {
             @Override
             public void deductStock(List<OrderDetailDTO> items) {
                 log.error("扣件商品库存失败", cause);
-                throw new RuntimeException(cause);
+                throw new BizIllegalException(cause);
             }
         };
     }

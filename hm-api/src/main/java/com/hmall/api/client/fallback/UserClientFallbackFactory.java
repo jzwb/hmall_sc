@@ -1,6 +1,7 @@
 package com.hmall.api.client.fallback;
 
 import com.hmall.api.client.UserClient;
+import com.hmall.common.exception.BizIllegalException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.openfeign.FallbackFactory;
 
@@ -12,6 +13,7 @@ public class UserClientFallbackFactory implements FallbackFactory<UserClient> {
             @Override
             public void deductMoney(String pw, Integer amount) {
                 log.error("扣减余额失败");
+                throw new BizIllegalException(cause);
             }
         };
     }
